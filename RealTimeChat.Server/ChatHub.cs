@@ -5,40 +5,31 @@ namespace RealTimeChat.Server
 {
     public class ChatHub : Hub
     {
-        private static readonly ConcurrentDictionary<string, string> users = new();
-
         private static readonly ConcurrentDictionary<string, HashSet<string>> rooms = new();
 
-        public Task SendMessage(string user, string message) => Clients.All.SendAsync("ReceiveMessage", user, message);
-
-        public override Task OnConnectedAsync()
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            users.TryAdd(Context.ConnectionId, "Online");
+            var currentGroup = rooms.FirstOrDefault(x => x.Value.Contains(Context.ConnectionId)).Key;
 
-            return base.OnConnectedAsync();
-        }
+            await LeaveRoom(currentGroup);
 
-        public override Task OnDisconnectedAsync(Exception? exception)
-        {
-            users[Context.ConnectionId] = "Offline";
-
-            return base.OnDisconnectedAsync(exception);
-        }
-
-        public Task CheckUserStatus(string connectionId)
-        {
-            _ = users.TryGetValue(connectionId, out string? status);
-
-            return Clients.Caller.SendAsync("ReceiveStatus", status);
+            await base.OnDisconnectedAsync(exception);
         }
 
         public async Task JoinRoom(string roomName)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
 
-            rooms.TryAdd(roomName, []);
+            var added = rooms.TryAdd(roomName, []);
 
-            rooms[roomName].Add(Context.ConnectionId);
+            if (added)
+            {
+                await Clients.All.SendAsync("ReceiveNewRoom", roomName);
+            }
+
+            _ = rooms[roomName].Add(Context.ConnectionId);
+
+            await Clients.Group(roomName).SendAsync("ReceiveNewUser", Context.ConnectionId);
 
             await Clients.Group(roomName).SendAsync("Send", $"{Context.ConnectionId} has joined the room {roomName}");
         }
@@ -49,15 +40,22 @@ namespace RealTimeChat.Server
 
             rooms[roomName].Remove(Context.ConnectionId);
 
+            await Clients.Group(roomName).SendAsync("ReceiveUserLeft", Context.ConnectionId);
+
             if (rooms[roomName].Count == 0)
             {
-                rooms.TryRemove(roomName, out _);
+                var removed = rooms.TryRemove(roomName, out _);
+
+                if (removed)
+                {
+                    await Clients.All.SendAsync("ReceiveRemovedRoom", roomName);
+                }
             }
 
             await Clients.Group(roomName).SendAsync("Send", $"{Context.ConnectionId} has left the room {roomName}");
         }
 
-        public Task SendMessageToRoom(string roomName, string message) => Clients.Group(roomName).SendAsync("ReceiveMessage", message);
+        public Task SendMessageToRoom(string roomName, string user, string message) => Clients.Group(roomName).SendAsync("ReceiveMessage", user, message);
 
         public Task GetAvailableRooms()
         {
@@ -65,6 +63,12 @@ namespace RealTimeChat.Server
 
             return Clients.Caller.SendAsync("ReceiveAvailableRooms", availableRooms);
         }
-    }
 
+        public Task GetUsersInRoom(string roomName)
+        {
+            var usersInRoom = rooms[roomName].ToList();
+
+            return Clients.Caller.SendAsync("ReceiveUsersInRoom", usersInRoom);
+        }
+    }
 }
