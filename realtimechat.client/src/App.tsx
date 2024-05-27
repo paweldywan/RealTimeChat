@@ -88,6 +88,9 @@ const App: React.FC = () => {
 
                     await connection.send('GetUsersInRoom', roomToJoin);
                 }
+                else {
+                    setUsers([]);
+                }
 
                 setRoom(roomToJoin);
 
