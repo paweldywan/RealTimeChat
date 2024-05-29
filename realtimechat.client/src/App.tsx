@@ -1,20 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+import {
+    useState,
+    useEffect
+} from 'react';
+
+import {
+    HubConnection,
+    HubConnectionBuilder,
+    HubConnectionState
+} from '@microsoft/signalr';
+
+import {
+    Container,
+    List,
+    Row
+} from 'reactstrap';
+
+import AppForm from './components/AppForm';
+
+import {
+    MessageData,
+    RoomData
+} from './interfaces';
+
 import 'bootstrap/dist/css/bootstrap.css';
-import { Button, Container, Form, FormGroup, Input, Label, List, Row } from 'reactstrap';
 
 const App: React.FC = () => {
     const [connection, setConnection] = useState<HubConnection | null>(null);
 
     const [messages, setMessages] = useState<{ user: string, message: string }[]>([]);
 
-    const [message, setMessage] = useState<string>('');
+    const [roomData, setRoomData] = useState<RoomData>({
+        room: 'new',
+        newRoom: ''
+    });
 
-    const [username, setUsername] = useState<string>('');
-
-    const [room, setRoom] = useState<string>('new');
-
-    const [newRoom, setNewRoom] = useState<string>('');
+    const [messageData, setMessageData] = useState<MessageData>({
+        username: '',
+        message: ''
+    });
 
     const [rooms, setRooms] = useState<string[]>([]);
 
@@ -66,9 +89,9 @@ const App: React.FC = () => {
     const sendMessage = async () => {
         if (connection?.state === HubConnectionState.Connected) {
             try {
-                await connection.send('SendMessageToRoom', room, username, message);
+                await connection.send('SendMessageToRoom', roomData.room, messageData.username, messageData.message);
 
-                setMessage('');
+                setMessageData(prevState => ({ ...prevState, message: '' }));
             } catch (e) {
                 console.error(e);
             }
@@ -80,8 +103,8 @@ const App: React.FC = () => {
     const joinRoom = async (roomToJoin: string) => {
         if (connection?.state === HubConnectionState.Connected) {
             try {
-                if (room !== 'new') {
-                    await connection.send('LeaveRoom', room);
+                if (roomData.room !== 'new') {
+                    await connection.send('LeaveRoom', roomData.room);
                 }
 
                 if (roomToJoin !== 'new') {
@@ -93,9 +116,7 @@ const App: React.FC = () => {
                     setUsers([]);
                 }
 
-                setRoom(roomToJoin);
-
-                setNewRoom('');
+                setRoomData({ room: roomToJoin, newRoom: '' });
 
                 setMessages([]);
             } catch (e) {
@@ -110,84 +131,61 @@ const App: React.FC = () => {
         <Container>
             <h1>Chat Application</h1>
 
-            <Form
+            <AppForm
                 onSubmit={e => {
                     e.preventDefault();
 
-                    joinRoom(newRoom);
+                    joinRoom(roomData.newRoom);
                 }}
                 className="mb-3"
-            >
-                <Row sm="2" xs="1">
-                    <FormGroup>
-                        <Label for="room">Room</Label>
+                data={roomData}
+                setData={setRoomData}
+                inputs={[
+                    {
+                        id: 'room',
+                        type: 'select',
+                        options: rooms,
+                        onChange: e => joinRoom(e.target.value),
+                        label: 'Room'
+                    },
+                    {
+                        id: 'newRoom',
+                        label: 'New room'
+                    }
+                ]}
+                rowProps={[{ sm: 2, xs: 1 }]}
+                buttonProps={{
+                    visible: roomData.room === 'new',
+                    label: 'Join room'
+                }}
+            />
 
-                        <Input
-                            type="select"
-                            value={room}
-                            onChange={e => joinRoom(e.target.value)}
-                            id="room"
-                        >
-                            {rooms.map((r, index) => (
-                                <option key={index}>{r}</option>
-                            ))}
-                        </Input>
-                    </FormGroup>
-
-                    {room === 'new' &&
-                        <FormGroup>
-                            <Label for="newRoom">New room</Label>
-
-                            <Input
-                                value={newRoom}
-                                onChange={e => setNewRoom(e.target.value)}
-                                id="newRoom"
-                            />
-                        </FormGroup>}
-                </Row>
-
-                {room === 'new' &&
-                    <Button>
-                        Add room
-                    </Button>}
-            </Form>
-
-            <Form
+            <AppForm
                 onSubmit={e => {
                     e.preventDefault();
 
                     sendMessage();
                 }}
                 className="mb-3"
-            >
-                <Row sm="2" xs="1">
-                    <FormGroup>
-                        <Label for="username">Username</Label>
-
-                        <Input
-                            value={username}
-                            onChange={e => setUsername(e.target.value)}
-                            id="username"
-                        />
-                    </FormGroup>
-
-                    <FormGroup>
-                        <Label for="message">Message</Label>
-
-                        <Input
-                            value={message}
-                            onChange={e => setMessage(e.target.value)}
-                            id="message"
-                        />
-                    </FormGroup>
-                </Row>
-
-                <Button
-                    disabled={!username || !message || room === 'new'}
-                >
-                    Send
-                </Button>
-            </Form>
+                data={messageData}
+                setData={setMessageData}
+                inputs={[
+                    {
+                        id: 'username',
+                        label: 'Username'
+                    },
+                    {
+                        id: 'message',
+                        label: 'Message'
+                    }
+                ]}
+                rowProps={[{ sm: 2, xs: 1 }]}
+                buttonProps={{
+                    visible: true,
+                    disabled: !messageData.username || !messageData.message || roomData.room === 'new',
+                    label: 'Send'
+                }}
+            />
 
             <Row>
                 <h2>Users:</h2>
