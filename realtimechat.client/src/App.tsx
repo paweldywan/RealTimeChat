@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+import 'bootstrap/dist/css/bootstrap.css';
+import { Button, Container, Form, FormGroup, Input, Label, List, Row } from 'reactstrap';
 
 const App: React.FC = () => {
     const [connection, setConnection] = useState<HubConnection | null>(null);
@@ -106,90 +107,108 @@ const App: React.FC = () => {
     };
 
     return (
-        <div>
+        <Container>
             <h1>Chat Application</h1>
 
-            <div>
-                <select
-                    value={room}
-                    onChange={e => joinRoom(e.target.value)}
-                >
-                    {rooms.map((r, index) => (
-                        <option key={index}>{r}</option>
-                    ))}
-                </select>
+            <Form
+                onSubmit={e => {
+                    e.preventDefault();
+
+                    joinRoom(newRoom);
+                }}
+                className="mb-3"
+            >
+                <Row sm="2" xs="1">
+                    <FormGroup>
+                        <Label for="room">Room</Label>
+
+                        <Input
+                            type="select"
+                            value={room}
+                            onChange={e => joinRoom(e.target.value)}
+                            id="room"
+                        >
+                            {rooms.map((r, index) => (
+                                <option key={index}>{r}</option>
+                            ))}
+                        </Input>
+                    </FormGroup>
+
+                    {room === 'new' &&
+                        <FormGroup>
+                            <Label for="newRoom">New room</Label>
+
+                            <Input
+                                value={newRoom}
+                                onChange={e => setNewRoom(e.target.value)}
+                                id="newRoom"
+                            />
+                        </FormGroup>}
+                </Row>
 
                 {room === 'new' &&
-                    <input
-                        placeholder="New Room"
-                        value={newRoom}
-                        onChange={e => setNewRoom(e.target.value)}
-                        style={{ marginLeft: ".5rem" }}
-                    />}
-            </div>
-
-            {room === 'new' &&
-                <div style={{ marginTop: ".5rem", marginBottom: ".5rem" }}>
-                    <button
-                        onClick={() => joinRoom(newRoom)}
-                    >
+                    <Button>
                         Add room
-                    </button>
-                </div>}
+                    </Button>}
+            </Form>
 
-            <div>
-                <input
-                    placeholder="Name"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                />
-            </div>
+            <Form
+                onSubmit={e => {
+                    e.preventDefault();
 
-            <div>
-                <input
-                    placeholder="Message"
-                    value={message}
-                    onChange={e => setMessage(e.target.value)}
-                />
-            </div>
+                    sendMessage();
+                }}
+                className="mb-3"
+            >
+                <Row sm="2" xs="1">
+                    <FormGroup>
+                        <Label for="username">Username</Label>
 
-            <div style={{ marginTop: ".5rem" }}>
-                <button
-                    onClick={sendMessage}
+                        <Input
+                            value={username}
+                            onChange={e => setUsername(e.target.value)}
+                            id="username"
+                        />
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label for="message">Message</Label>
+
+                        <Input
+                            value={message}
+                            onChange={e => setMessage(e.target.value)}
+                            id="message"
+                        />
+                    </FormGroup>
+                </Row>
+
+                <Button
                     disabled={!username || !message || room === 'new'}
                 >
                     Send
-                </button>
-            </div>
+                </Button>
+            </Form>
 
-            <div>
+            <Row>
                 <h2>Users:</h2>
-                <ul
-                    style={{
-                        listStyleType: 'none',
-                        padding: 0
-                    }}
-                >
+
+                <List type="unstyled">
                     {users.map((u, index) => (
                         <li key={index}>{u}</li>
                     ))}
-                </ul>
-            </div>
+                </List>
+            </Row>
 
-            <div>
+            <Row>
                 <h2>Messages:</h2>
-                <ul
-                    style={{
-                        listStyleType: 'none',
-                        padding: 0
-                    }}
-                >
+
+                <List type="unstyled">
                     {messages.map((m, index) => (
                         <li key={index}><strong>{m.user}:</strong> {m.message}</li>
                     ))}
-                </ul>
-            </div>
-        </div>
+                </List>
+            </Row>
+        </Container >
     );
 };
 
