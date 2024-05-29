@@ -22,3 +22,8 @@ export interface FormButton {
     disabled?: boolean;
     visible?: boolean;
 }
+
+export interface Message {
+    username: string;
+    message: string;
+}

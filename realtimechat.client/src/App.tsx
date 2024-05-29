@@ -18,6 +18,7 @@ import {
 import AppForm from './components/AppForm';
 
 import {
+    Message,
     MessageData,
     RoomData
 } from './interfaces';
@@ -27,7 +28,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 const App: React.FC = () => {
     const [connection, setConnection] = useState<HubConnection | null>(null);
 
-    const [messages, setMessages] = useState<{ user: string, message: string }[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
     const [roomData, setRoomData] = useState<RoomData>({
         room: 'new',
@@ -60,7 +61,7 @@ const App: React.FC = () => {
 
                     console.log('Connected!');
 
-                    connection.on('ReceiveMessage', (user: string, message: string) => setMessages(messages => [...messages, { user, message }]));
+                    connection.on('ReceiveMessage', (username: string, message: string) => setMessages(messages => [...messages, { username, message }]));
 
                     connection.on('ReceiveAvailableRooms', (rooms: string[]) => setRooms(['new', ...rooms]));
 
@@ -74,7 +75,7 @@ const App: React.FC = () => {
 
                     connection.on('ReceiveUserLeft', (connectionId: string) => setUsers(users => users.filter(u => u !== connectionId)));
 
-                    connection.on('Send', (message: string) => setMessages(messages => [...messages, { user: 'System', message }]));
+                    connection.on('Send', (message: string) => setMessages(messages => [...messages, { username: 'System', message }]));
 
                     await connection.send('GetAvailableRooms');
                 } catch (e) {
@@ -201,7 +202,7 @@ const App: React.FC = () => {
 
                 <List type="unstyled">
                     {messages.map((m, index) => (
-                        <li key={index}><strong>{m.user}:</strong> {m.message}</li>
+                        <li key={index}><strong>{m.username}:</strong> {m.message}</li>
                     ))}
                 </List>
             </Row>
