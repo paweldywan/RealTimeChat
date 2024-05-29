@@ -181,7 +181,6 @@ const App: React.FC = () => {
                 ]}
                 rowProps={[{ sm: 2, xs: 1 }]}
                 buttonProps={{
-                    visible: true,
                     disabled: !messageData.username || !messageData.message || roomData.room === 'new',
                     label: 'Send'
                 }}

@@ -59,7 +59,7 @@ const AppForm = <T,>({
                 </Row>
             ))}
 
-            {buttonProps?.visible &&
+            {buttonProps && buttonProps.visible !== false &&
                 <Button
                     disabled={buttonProps.disabled}
                 >
