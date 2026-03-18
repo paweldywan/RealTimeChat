@@ -2,7 +2,7 @@
 
 A modern real-time chat application built with ASP.NET Core, SignalR, and React. This application enables users to create and join chat rooms, exchange messages in real-time, and see live updates of connected users.
 
-**Live Application:** https://realtimechat.paweldywan.com/
+**Live Application:** https://realtimechat.paweldywandev.com/
 
 ## Overview
 
@@ -86,7 +86,7 @@ Before running the application, ensure you have the following installed:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/paweldywan/RealTimeChat.git
+   git clone https://github.com/paweldywandev/RealTimeChat.git
    cd RealTimeChat
    ```
 
@@ -254,8 +254,8 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 **Pawel Dywan**
 
-- GitHub: [@paweldywan](https://github.com/paweldywan)
-- Website: https://paweldywan.com/
+- GitHub: [@paweldywandev](https://github.com/paweldywandev)
+- Website: https://paweldywandev.com/
 
 ## Acknowledgments
 
@@ -268,5 +268,6 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Support
 
 For issues, questions, or suggestions:
-- Open an issue on [GitHub](https://github.com/paweldywan/RealTimeChat/issues)
-- Try the [live application](https://realtimechat.paweldywan.com/)
+- Open an issue on [GitHub](https://github.com/paweldywandev/RealTimeChat/issues)
+- Try the [live application](https://realtimechat.paweldywandev.com/)
+
